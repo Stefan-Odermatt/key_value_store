@@ -42,7 +42,7 @@ int kv_put(kv_t *db, char *key, char* value) {
       char *newval = strdup(value);
       if (!newval) return -1;
       entry->value = newval;
-      return lookup_idx;
+      return 0;
     }
 
     // If we land on a slot that is "empty"
@@ -58,7 +58,7 @@ int kv_put(kv_t *db, char *key, char* value) {
       entry->key = newkey;
       entry->value = newval;
       db->count++;
-      return lookup_idx;
+      return 0;
     }
   }  
   return -2;
