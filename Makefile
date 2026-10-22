@@ -9,8 +9,8 @@ clean:
 	rm -f bin/*
 
 $(TARGET): $(OBJ)
-	gcc -o $@ $?
+	gcc -o $@ $? -Wall --debug
 
 obj/%.o: src/%.c
-	gcc -c $< -o $@ -Iinc
+	gcc -c $< -o $@ -Iinc --debug
 

@@ -1,5 +1,68 @@
 #include <kv.h>
 #include <stdio.h>
+#include <strings.h>
+
+#define TOMBSTONE 0x1
+
+size_t hash(char *key, int capacity) {
+  size_t hash = 0x12345678deadbeef;
+  
+  if (key == NULL) {
+    return -1;
+  }
+
+  while(*key) {
+    hash ^= *key;
+    hash = hash << 8;
+    hash += *key;
+
+    key++;
+  }
+
+  return hash % capacity;
+}
+
+int kv_put(kv_t *db, char *key, char* value) {
+  if (!db || !key || !value) {
+    return -1;
+  }
+
+  size_t idx = hash(key, db->capacity);
+
+  for (int i = 0; i < db->capacity; i++) {
+    
+    size_t lookup_idx = (idx + i) % db->capacity;
+ 
+    kv_entry_t *entry = &db->entries[lookup_idx];
+    
+    // If the key is already set, we have to update the value
+    if(entry->key && 
+       entry->key != (void *)TOMBSTONE &&
+       !strcmp(entry->key, key)) {
+      char *newval = strdup(value);
+      if (!newval) return -1;
+      entry->value = newval;
+      return lookup_idx;
+    }
+
+    // If we land on a slot that is "empty"
+    // null or tombstone
+    if(!entry->key || entry->key == (void *)TOMBSTONE) {
+      char *newval = strdup(value);
+      char *newkey = strdup(key);
+      if (!newval || !newkey) {
+        free(newval);
+        free(newkey);
+        return -1;
+      }
+      entry->key = newkey;
+      entry->value = newval;
+      db->count++;
+      return lookup_idx;
+    }
+  }  
+  return -2;
+}
 
 kv_t *kv_init(size_t capacity) {
 	
