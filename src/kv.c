@@ -22,6 +22,32 @@ size_t hash(char *key, int capacity) {
   return hash % capacity;
 }
 
+char * kv_get(kv_t *db, char *key) {
+  if (!db || !key) {
+    return NULL;
+  }
+
+  size_t idx = hash(key, db->capacity);
+
+  for (int i = 0; i < db->capacity; i++) {
+    
+    size_t lookup_idx = (idx + i) % db->capacity;
+ 
+    kv_entry_t *entry = &db->entries[lookup_idx];
+
+    if (entry->key == NULL) {
+      return NULL;
+    }
+
+    if (entry->key != (void *)TOMBSTONE &&
+        !strcmp(entry->key, key)) {
+          return entry->value;
+        }
+  }
+  
+  return NULL;
+}
+
 int kv_put(kv_t *db, char *key, char* value) {
   if (!db || !key || !value) {
     return -1;
