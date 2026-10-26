@@ -22,6 +22,38 @@ size_t hash(char *key, int capacity) {
   return hash % capacity;
 }
 
+int kv_delete(kv_t *db, char *key) {
+  if (!db || !key) {
+    return -1;
+  }
+
+  size_t idx = hash(key, db->capacity);
+
+  for (int i = 0; i < db->capacity; i++) {
+    
+    size_t lookup_idx = (idx + i) % db->capacity;
+ 
+    kv_entry_t *entry = &db->entries[lookup_idx];
+    
+    if (entry->key == NULL) {
+      return -1;
+    }
+
+    // If the key is already set, we have to update the value
+    if(entry->key && 
+       entry->key != (void *)TOMBSTONE &&
+       !strcmp(entry->key, key)) {
+      free(entry->key);
+      free(entry->value);
+      db->count--;
+      entry->key = (void *)TOMBSTONE;
+      entry->value = NULL;
+      return 0;
+    }
+  }  
+  return -1;
+}
+
 char * kv_get(kv_t *db, char *key) {
   if (!db || !key) {
     return NULL;
