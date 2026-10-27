@@ -22,9 +22,9 @@ size_t hash(char *key, int capacity) {
   return hash % capacity;
 }
 
-int kv_free(kv_t *db) {
+void kv_free(kv_t *db) {
   if (db == NULL) {
-    return -1;
+    return;
   }
 
   for (int i = 0; i < db->capacity; i++) {
@@ -40,7 +40,7 @@ int kv_free(kv_t *db) {
   free(db->entries);
   free(db);
 
-  return 0;
+  return;
 }
 
 int kv_delete(kv_t *db, char *key) {
