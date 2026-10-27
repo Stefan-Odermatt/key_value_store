@@ -22,6 +22,27 @@ size_t hash(char *key, int capacity) {
   return hash % capacity;
 }
 
+int kv_free(kv_t *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
+  for (int i = 0; i < db->capacity; i++) {
+    kv_entry_t *entry = &db->entries[i];
+    if (entry->key && entry->key != (void *)TOMBSTONE) {
+      free(entry->key);
+      free(entry->value);
+      entry->key = NULL;
+      entry->value = NULL;
+    }
+  }
+
+  free(db->entries);
+  free(db);
+
+  return 0;
+}
+
 int kv_delete(kv_t *db, char *key) {
   if (!db || !key) {
     return -1;
@@ -99,6 +120,7 @@ int kv_put(kv_t *db, char *key, char* value) {
        !strcmp(entry->key, key)) {
       char *newval = strdup(value);
       if (!newval) return -1;
+      free(entry->value);
       entry->value = newval;
       return 0;
     }
